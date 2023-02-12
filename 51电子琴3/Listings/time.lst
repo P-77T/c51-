@@ -1,0 +1,62 @@
+C51 COMPILER V9.59.0.0   TIME                                                              02/01/2023 17:36:25 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TIME
+OBJECT MODULE PLACED IN .\Objects\time.obj
+COMPILER INVOKED BY: D:\keil5\C51\BIN\C51.EXE time.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\time.l
+                    -st) TABS(2) OBJECT(.\Objects\time.obj)
+
+line level    source
+
+   1          
+   2          #include "time.h"
+   3          
+   4          
+   5          void time0_init()
+   6          {
+   7   1        TMOD|=0X01;  //选择为定时器0模式，工作方式1
+   8   1        TH0=(65536-10000)/256;   //给定时器赋初值，定时10ms
+   9   1        TL0=(65536-10000)%256;  
+  10   1        ET0=1;       //打开定时器1中断允许 IE 2
+  11   1        EA=1;        //打开总中断          IE 8
+  12   1        TR0=0;      //关闭定时器           TCON 5
+  13   1      }
+  14          
+  15          void time1_init()
+  16          {
+  17   1        TMOD|=0X10;   //选择为定时器1模式，工作方式1
+  18   1        TH1=(65536-10000)/256;    //给定时器赋初值，定时10ms
+  19   1        TL1=(65536-10000)%256;  
+  20   1        ET1=1;       //打开定时器1中断允许 IE 4
+  21   1        EA=1;        //打开总中断          IE 8
+  22   1        TR1=0;      //关闭定时器           TCON 7
+  23   1      }
+  24          
+  25          void exti0_init() //中断方式0
+  26          {
+  27   1        IT0=1;              //跳变沿触发方式（下降沿） TCON 1
+  28   1        EX0=1;              //打开INT0的中断允许       IE 1
+  29   1        EA=1;               //打开总中断               IE 8
+  30   1      }
+  31          
+  32          void exti1_init() //中断方式0
+  33          {
+  34   1        IT1=1;              //跳变沿触发方式（下降沿） TCON 3
+  35   1        EX1=1;              //打开INT1的中断允许       IE 3
+  36   1        EA=1;               //打开总中断               IE 8
+  37   1      }
+  38          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     46    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

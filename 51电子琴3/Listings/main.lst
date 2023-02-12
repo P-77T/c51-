@@ -1,0 +1,416 @@
+C51 COMPILER V9.59.0.0   MAIN                                                              02/04/2023 22:26:23 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\keil5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main.l
+                    -st) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <REGX52.H>
+   2          #include "time.h"
+   3          #include "Delay.h"
+   4          #include "LCD1602.h"
+   5          
+   6          
+   7          sbit key=P3^2;
+   8          sbit SOUNDER=P3^7;
+   9          unsigned char mode;
+  10          
+  11          //播放速度，值为四分音符的时长(ms)
+  12          #define SPEED 500
+  13          
+  14          #define P   0
+  15          #define L1  1
+  16          #define L1_ 2
+  17          #define L2  3
+  18          #define L2_ 4
+  19          #define L3  5
+  20          #define L4  6
+  21          #define L4_ 7
+  22          #define L5  8
+  23          #define L5_ 9
+  24          #define L6  10
+  25          #define L6_ 11
+  26          #define L7  12
+  27          #define M1  13
+  28          #define M1_ 14
+  29          #define M2  15
+  30          #define M2_ 16
+  31          #define M3  17
+  32          #define M4  18
+  33          #define M4_ 19
+  34          #define M5  20
+  35          #define M5_ 21
+  36          #define M6  22
+  37          #define M6_ 23
+  38          #define M7  24
+  39          #define H1  25
+  40          #define H1_ 26
+  41          #define H2  27
+  42          #define H2_ 28
+  43          #define H3  29
+  44          #define H4  30
+  45          #define H4_ 31
+  46          #define H5  32
+  47          #define H5_ 33
+  48          #define H6  34
+  49          #define H6_ 35
+  50          #define H7  36
+  51          
+  52          
+  53          
+  54          //频率表 C调
+C51 COMPILER V9.59.0.0   MAIN                                                              02/04/2023 22:26:23 PAGE 2   
+
+  55          unsigned int FreqTable[]={0,//休止符
+  56                            //低音    1     1#    2     2#    3     4#    4#    5     5#    6     6#    7
+  57                                    63628,63731,63835,63928,64021,64103,64185,64260,64331,64400,64463,64528,
+  58                            //中音    1     1#    2     2#    3     4#    4#    5     5#    6     6#    7
+  59                                    64580,64633,64684,64732,64777,64820,64860,64898,64934,64968,65000,65030,
+  60                            //高音    1     1#    2     2#    3     4#    4#    5     5#    6     6#    7
+  61                                    65058,65085,65110,65134,65157,65178,65198,65217,65235,65252,65268,65283,
+  62          };
+  63          
+  64          unsigned char Musical_note;
+  65          
+  66          /*
+  67          
+  68          
+  69          */
+  70          void  electronic_play()
+  71          { 
+  72   1        
+  73   1        unsigned char btn;
+  74   1        
+  75   1        P1 = 0xff;
+  76   1        time0_init();
+  77   1        while(1)
+  78   1        {
+  79   2          if(mode==0)          
+  80   2          {
+  81   3            //反转法
+  82   3            
+  83   3            P1 = 0xf0;            //列输入
+  84   3            if(0xf0 != (P1&0xf0))       //识别列中是否有键按下
+  85   3            {
+  86   4              Delay(10);        //去抖动
+  87   4              if(0xf0 != (btn=P1&0xf0)) //再次识别并送列码
+  88   4              {
+  89   5                P1 = 0x0f;        //行输入
+  90   5                btn |= (P1&0x0f);   //取行码，并与列码组合
+  91   5                TR0=1;            //
+  92   5                switch(btn)       //判键值
+  93   5                {            
+  94   6                  case 0xee:Musical_note = M1;LCD_ShowString(1,1,"M1");break; 
+  95   6                  case 0xde:Musical_note = L7;LCD_ShowString(1,1,"L7");break;
+  96   6                  case 0xbe:Musical_note = L6;LCD_ShowString(1,1,"L6");break; 
+  97   6                  case 0x7e:Musical_note = L5;LCD_ShowString(1,1,"L5");break; 
+  98   6                  case 0xed:Musical_note = M5;LCD_ShowString(1,1,"M5");break;
+  99   6                  case 0xdd:Musical_note = M4;LCD_ShowString(1,1,"M4");break;
+ 100   6                  case 0xbd:Musical_note = M3;LCD_ShowString(1,1,"M3");break;
+ 101   6                  case 0x7d:Musical_note = M2;LCD_ShowString(1,1,"M2");break;
+ 102   6                  case 0xeb:Musical_note = H2;LCD_ShowString(1,1,"H2");break;
+ 103   6                  case 0xdb:Musical_note = H1;LCD_ShowString(1,1,"H1");break;
+ 104   6                  case 0xbb:Musical_note = M7;LCD_ShowString(1,1,"M7");break;
+ 105   6                  case 0x7b:Musical_note = M6;LCD_ShowString(1,1,"M6");break;
+ 106   6                  case 0xe7:Musical_note = H6;LCD_ShowString(1,1,"H6");break;
+ 107   6                  case 0xd7:Musical_note = H5;LCD_ShowString(1,1,"H5");break;
+ 108   6                  case 0xb7:Musical_note = H4;LCD_ShowString(1,1,"H4");break;
+ 109   6                  case 0x77:Musical_note = H3;LCD_ShowString(1,1,"H3");break;
+ 110   6                  default:TR0 = 0;break;
+ 111   6                }
+ 112   5              }
+ 113   4            } 
+ 114   3            if(0xf0 == P1)
+ 115   3            {
+ 116   4              TR0 = 0;
+C51 COMPILER V9.59.0.0   MAIN                                                              02/04/2023 22:26:23 PAGE 3   
+
+ 117   4              SOUNDER = 1;     //松开按键关定时器，停蜂鸣器
+ 118   4            }
+ 119   3          }
+ 120   2          else break;
+ 121   2        }
+ 122   1      }
+ 123          
+ 124          void T0sev() interrupt 1
+ 125          {
+ 126   1        TH0 =  FreqTable[Musical_note]/ 256;
+ 127   1        TL0 =  FreqTable[Musical_note]% 256;
+ 128   1        SOUNDER = ~SOUNDER;   
+ 129   1      }
+ 130          
+ 131          //{音符,时值},一行为小节,以4作为四分音符
+ 132          //天空之城 频谱
+ 133          unsigned char code Music1[122][2]={
+ 134            //1
+ 135            {P, 4},{P,  4},{P,  4},{M6, 2},{M7, 2},
+ 136            {H1,  4+2},{M7, 2},{H1, 4},{H3, 4},
+ 137            {M7,  4+4+4},{M3, 2},{M3, 2},
+ 138            
+ 139            //2
+ 140            {M6,  4+2},{M5, 2},{M6, 4},{H1, 4},
+ 141            {M5,  4+4+4},{M3, 4},
+ 142            {M4,  4+2},{M3, 2},{M4, 4},{H1, 4},
+ 143            
+ 144            //3
+ 145            {M3,  4+4},{P,  2},{H1, 2},{H1, 2},{H1, 2},
+ 146            {M7,  4+2},{M4_,2},{M4_,4},{M7, 4},
+ 147            {M7,  8},{P,  4},{M6, 2},{M7, 2},
+ 148            
+ 149            //4
+ 150            {H1,  4+2},{M7, 2},{H1, 4},{H3, 4},
+ 151            {M7,  4+4+4},{M3, 2},{M3, 2},
+ 152            {M6,  4+2},{M5, 2},{M6, 4},{H1, 4},
+ 153            
+ 154            //5
+ 155            {M5,  4+4+4},{M2, 2},{M3, 2},
+ 156            {M4,  4},{H1, 2},{M7, 2+2},{H1, 2+4},
+ 157            {H2,  2},{H2, 2},{H3, 2},{H1, 2+4+4},
+ 158            
+ 159            //6
+ 160            {H1,  2},{M7, 2},{M6, 2},{M6, 2},{M7, 4},{M5_,4},
+ 161            {M6,  4+4+4},{H1, 2},{H2, 2},
+ 162            {H3,  4+2},{H2, 2},{H3, 4},{H5, 4},
+ 163            
+ 164            //7
+ 165            {H2,  4+4+4},{M5, 2},{M5, 2},
+ 166            {H1,  4+2},{M7, 2},{H1, 4},{H3, 4},
+ 167            {H3,  4+4+4+4},
+ 168            
+ 169            //8
+ 170            {M6,  2},{M7, 2},{H1, 4},{M7, 4},{H2, 2},{H2, 2},
+ 171            {H1,  4+2},{M5, 2+4+4},
+ 172            {H4,  4},{H3, 4},{H3, 4},{H1, 4},
+ 173            
+ 174            //9
+ 175            {H3,  4+4+4},{H3, 4},
+ 176            {H6,  4+4},{H5, 4},{H5, 4},
+ 177            {H3,  2},{H2, 2},{H1, 4+4},{P,  2},{H1, 2},
+ 178            
+C51 COMPILER V9.59.0.0   MAIN                                                              02/04/2023 22:26:23 PAGE 4   
+
+ 179            //10
+ 180            {H2,  4},{H1, 2},{H2, 2},{H2, 4},{H5, 4},
+ 181            {H3,  4+4+4},{H3, 4},
+ 182            {H6,  4+4},{H5, 4+4},
+ 183            
+ 184            //11
+ 185            {H3,  2},{H2, 2},{H1, 4+4},{P,  2},{H1, 2},
+ 186            {H2,  4},{H1, 2},{H2, 2+4},{M7, 4},
+ 187            {M6,  4+4+4},{P,  4},
+ 188            
+ 189            0xff  //终止标志,播放完毕
+ 190          };
+ 191          
+ 192          unsigned char code Music2[][2]={
+ 193            //5
+ 194            {H5,2},{H3,1},{H4,1},{H5,2},{H3,1},{H4,1},
+ 195            {H5,1},{M5,1},{M6,1},{M7,1},{H1,1},{H2,1},{H3,1},{H4,1},
+ 196            {H3,2},{H1,1},{H2,1},{H3,2},{M3,1},{M4,1},
+ 197            {M5,1},{M6,1},{M5,1},{M4,1},{M5,1},{M3,1},{M4,1},{M5,1},  
+ 198            {M4,2},{M6,1},{M5,1},
+ 199            {M4,2},{M3,1},{M2,1},{M3,1},{M2,1},{M1,1},{M2,1},{M3,1},{M4,1},{M5,1},{M6,1},
+ 200            {M4,2},{M6,1},{M5,1},{M6,2},{M7,1},{H1,1},
+ 201            {M5,1},{M6,1},{M7,1},{H1,1},{H2,1},{H3,1},{H4,1},{H5,1},
+ 202            {H3,2},{H1,1},{H2,1},{H3,2},{H2,1},{H1,1},
+ 203            {H2,1},{M7,1},{H1,1},{H2,1},{H3,1},{H2,1},{H1,1},{M7,1},
+ 204            {H2,2},{M6,1},{M5,1},{H1,2},{M1,1},{M2,1},
+ 205            {M3,1},{M4,1},{M3,1},{M2,1},{M3,1},{H1,1},{M7,1},{H1,1},
+ 206            {H6,2},{H1,1},{M7,1},{M6,2},{M5,1},{M4,1},
+ 207            {M5,1},{M4,1},{M3,1},{M4,1},{M5,1},{M6,1},{M7,1},{H1,1},
+ 208            {H6,2},{H1,1},{M7,1},{H1,2},{M7,1},{M6,1},
+ 209            {M7,1},{H1,1},{H2,1},{H1,1},{M7,1},{H1,1},{M6,1},{M7,1},{H1,4+4},
+ 210            //6
+ 211            {H3,2},{M3,2},{M4,2},{M3,2},{M2,2},{H2,2},{H3,2},{H2,2},
+ 212            {H1,2},{M3,2},{M1,2},{M6,2},{M5,2},{M5,2},{M4,2},{M5,2},
+ 213            {M6,2},{M6,2},{M7,2},{M6,2},{M5,2},{M5,2},{M4,2},{M5,2},
+ 214            {M6,2},{M6,2},{M5,2},{M6,2},{M7,2},{M7,2},{M6,2},{M7,2},
+ 215            {H1,2},{H1,2},{M2,2},{H1,2},{M7,2},{M7,2},{H1,2},{M7,2},
+ 216            {M6,2},{M6,2},{M5,2},{M6,2},{M7,2},{M7,2},{H3,2},{H2,2},
+ 217            {H1,2},{H1,2},{H2,2},{H4,2},{H3,2},{M3,2},{M5,2},{H3,2},
+ 218            {H1,2},{M4,2},{H3,2},{H4,2},{H2,2},{H5,2},{H4,2},{H5,2},
+ 219            //7
+ 220            {H1,2},{H1,1},{H2,1},{H3,2},{H1,2},{M7,2},{H7,1},{M1,1},{H2,2},{M7,2},
+ 221            {H1,2},{M6,1},{M7,1},{H1,2},{M6,2},{M7,2},{H5,1},{H4,1},{H3,2},{H2,2},
+ 222            {H1,2},{H4,1},{H3,1},{H2,2},{H4,2},{H3,2},{H1,1},{H2,1},{H3,2},{M5,2},
+ 223            {M4,2},{M6,1},{M5,1},{M4,2},{M3,2},{M2,2},{M5,1},{M4,1},{M3,2},{M2,2},
+ 224            {M3,2},{H1,1},{M7,1},{H1,2},{M3,2},{M5,2},{M6,1},{M7,1},{H2,2},{M7,2},
+ 225            {M6,2},{H1,1},{H2,1},{H3,2},{H1,2},{H3,2},{H3,1},{H2,1},{H1,2},{M7,2},
+ 226            {M6,2},{M6,2},{M5,1},{M6,2},{M7,2},{H1,1},{H3,1},{H2,1},{H1,2},{H3,2},
+ 227            {H4,2},{H1,1},{M7,1},{M6,2},{M6,2},{M4,2},{M2,2},{M5,2},{M5,2},
+ 228            //8
+ 229            {H5,4+4+4+4+2},{H1,4+4+4+2},
+ 230            {H5,4},{H4,4+4},{H5,4+4},{H4,4},{H1,4+2},{H1,4-2},{H1,4},{M7,2},{H1,4+4},{H1,2},
+ 231            {M7,4+4},{M6,4+4},{M5,4+4},{M1,4+2},{M2,2},
+ 232            {M3,4+4},{M6,4+4},{M2,4+4},{H2,2},{H3,4+2},
+ 233            {H3,2},{H3,2},{H4,2},{H3,2},{H2,2},{H1,4},{H1,2},{H1,2},{H2,2},{H1,2},{M7,4},
+ 234            {M6,4+4},{H1,4+4},{H1,2},{M7,2},{M6,2},{M7,2},{M5,4+2},{M5,2},{M5,4+2},{M5,2},
+ 235            {M5,2},{M6,2},{M5,2},{M4,2},{M3,4+2},{H3,2},
+ 236            {H3,2},{H4,2},{H3,2},{H2,2},{H1,4},{M7,4},{M6,2},{M7,2},
+ 237            {M5,4+2},{M5,2},{M4,4},{H1,4},{M7,4+4},{H1,2},{H1,4+4},{M7,4+4},
+ 238            {M6,4+4},{M5,2},{M5,4},{M4,4+4},
+ 239            //9
+ 240            {M3,4},{M2,4+4},{P,2},{M2,2},{M3,4},{H3,4+4},{H2,4},
+C51 COMPILER V9.59.0.0   MAIN                                                              02/04/2023 22:26:23 PAGE 5   
+
+ 241            {H1,4},{H1,4+4},{M7,4},{M6,4+4},{H1,4},{M5,4},
+ 242            {M6,4+4},{M5,4+4},{M5,4+4},{M5,4+2},{M4,2},{H3,4+4},{H3,4+2},{H2,2},
+ 243            {H1,4+4+4+4+4+4},{M7,4+4},{H1,4},{M1,4},{L7,4},{M7,4},{M6,4},{M6,4},{M5,4},{H5,4},
+ 244            {H4,4},{M1,4},{M3,4},{H3,4},{H2,4},{M6,4},{M2,4},{H2,4},
+ 245            {H1,4},{M1,4},{L7,4},{M7,4},{M6,4},{M6,4},{M5,4},{H5,4},
+ 246            {H4,4},{M1,4},{M3,4},{H3,4},{H4,4+4},{H5,4+4},{H1,4+4+4+4},
+ 247            
+ 248            0xff,
+ 249            /*
+ 250            {M},{M},{M},{M},{M},{M},{M},{M},
+ 251            {M,1},{M,2},{M,4},{M,4+4},{M,4+4+4},{M,4+4+4+4},
+ 252            {H,1},{H,2},{H,4},{H,4+4},{H,4+4+4},{H,4+4+4+4},*/
+ 253          };
+ 254          unsigned char FreqSelect,MusicSelect;
+ 255          
+ 256          void music1_play()
+ 257          {
+ 258   1      
+ 259   1        time1_init();
+ 260   1        LCD_ShowString(1,1,"Music:");
+ 261   1        LCD_ShowString(2,1,"Castle InThe Sky");
+ 262   1      
+ 263   1          while(1)
+ 264   1          {
+ 265   2        
+ 266   2            if(mode==1)
+ 267   2            {
+ 268   3              if(Music1[MusicSelect][0] != 0xff)  //如果不是停止标志位
+ 269   3              {
+ 270   4      
+ 271   4                FreqSelect = Music1[MusicSelect][0];  //选择音符对应的频率
+ 272   4                Delay(SPEED / 4*Music1[MusicSelect][1]);  //选择音符对应的时值
+ 273   4                MusicSelect++;
+ 274   4                TR1 = 0;
+ 275   4                Delay(5); //音符间短暂停顿
+ 276   4                TR1 = 1;  
+ 277   4              }
+ 278   3              else  //如果是停止标志位
+ 279   3              {
+ 280   4                TR1 = 0;
+ 281   4                LCD_WriteCommand(0x01);  //清屏
+ 282   4                Delay(2000);
+ 283   4                LCD_ShowString(1,1,"Music:");
+ 284   4                LCD_ShowString(2,1,"Castle InThe Sky");
+ 285   4                MusicSelect = 0;
+ 286   4              }
+ 287   3            }
+ 288   2            else 
+ 289   2            {
+ 290   3              TR1 = 0;
+ 291   3              break;
+ 292   3            }
+ 293   2          }
+ 294   1      }
+ 295          
+ 296          void music2_play()
+ 297          {
+ 298   1      
+ 299   1        time1_init();
+ 300   1            //
+ 301   1        LCD_ShowString(1,1,"Music:");
+ 302   1        LCD_ShowString(2,1,"Canon");
+C51 COMPILER V9.59.0.0   MAIN                                                              02/04/2023 22:26:23 PAGE 6   
+
+ 303   1      
+ 304   1          while(1)
+ 305   1          {
+ 306   2        
+ 307   2            if(mode==2)
+ 308   2            {
+ 309   3              if(Music2[MusicSelect][0] != 0xff)  //如果不是停止标志位
+ 310   3              {
+ 311   4      
+ 312   4                FreqSelect = Music2[MusicSelect][0];  //选择音符对应的频率
+ 313   4                Delay(SPEED / 4*Music2[MusicSelect][1]);  //选择音符对应的时值
+ 314   4                MusicSelect++;
+ 315   4                TR1 = 0;
+ 316   4                Delay(5); //音符间短暂停顿
+ 317   4                TR1 = 1;  
+ 318   4              }
+ 319   3              else  //如果是停止标志位
+ 320   3              {
+ 321   4                TR1 = 0;
+ 322   4                LCD_WriteCommand(0x01);  //清屏
+ 323   4                Delay(2000);
+ 324   4                LCD_ShowString(1,1,"Music:");
+ 325   4                LCD_ShowString(2,1,"Canon");
+ 326   4                MusicSelect = 0;
+ 327   4              }
+ 328   3            }
+ 329   2            else 
+ 330   2            {
+ 331   3              TR1 = 0;
+ 332   3              break;
+ 333   3            }
+ 334   2          }
+ 335   1      }
+ 336          
+ 337          void T1sev() interrupt 3            //
+ 338          {
+ 339   1        if(FreqTable[FreqSelect]) //如果不是休止符
+ 340   1        {
+ 341   2          /*取对应频率值的重装载值到定时器*/
+ 342   2          TH1 = FreqTable[FreqSelect]/256;    
+ 343   2          TL1 = FreqTable[FreqSelect]%256;    
+ 344   2          SOUNDER = ~SOUNDER; 
+ 345   2        }
+ 346   1      }
+ 347          
+ 348          void exti0() interrupt 0 //外部中断0中断函数
+ 349          {
+ 350   1        
+ 351   1        Delay(10);
+ 352   1        if(key==0)
+ 353   1        {
+ 354   2          TR0=0;
+ 355   2          TR1=0;             //光定时器
+ 356   2          mode++;
+ 357   2          LCD_Init();
+ 358   2          if(mode==3)
+ 359   2            mode=0;
+ 360   2        }
+ 361   1      }
+ 362          
+ 363          void main()
+ 364          {
+C51 COMPILER V9.59.0.0   MAIN                                                              02/04/2023 22:26:23 PAGE 7   
+
+ 365   1        LCD_Init();
+ 366   1        mode = 0x00;
+ 367   1        exti0_init();               //外部中断0配置
+ 368   1        while(1)
+ 369   1        {
+ 370   2          
+ 371   2          if(mode==1)
+ 372   2            music1_play();
+ 373   2          else if(mode==2)
+ 374   2            music2_play();
+ 375   2          else if(mode==0)
+ 376   2            electronic_play();
+ 377   2          
+ 378   2        } 
+ 379   1        
+ 380   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    853    ----
+   CONSTANT SIZE    =   1082    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     78    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
